@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camera Shop Premium</title>
+
+<style>
+body{margin:0;font-family:Arial;background:#f5f5f5;}
+header{background:#1e49a5;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;}
+nav a{color:white;text-decoration:none;margin:0 8px;font-weight:bold;cursor:pointer;padding:5px 8px;border-radius:5px;transition:0.3s;}
+nav a:hover{background:rgba(255,255,255,0.2);}
+nav a.active{background:white;color:#294296;}
+
+.marquee{background:#222;color:white;padding:8px;}
+
+.search-box{padding:15px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
+.search-box input{width:50%;padding:8px;border-radius:5px;border:1px solid #ccc;}
+
+.wa-home{background:green;color:white;padding:8px 12px;border-radius:5px;text-decoration:none;font-weight:bold;}
+
+.container{display:flex;flex-wrap:wrap;gap:20px;padding:20px;justify-content:center;}
+
+.card{background:white;width:220px;padding:10px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);position:relative;transition:0.3s;}
+.card:hover{transform:translateY(-5px);}
+.card img{width:100%;
+aspect-ratio:1/1;
+object-fit:cover;
+border-radius:10px;
+}
+
+.badge{position:absolute;top:10px;left:10px;background:rgb(36, 26, 173);color:white;padding:3px 6px;font-size:12px;border-radius:5px;}
+
+button{background:#091153;border:none;color:white;padding:7px;border-radius:5px;cursor:pointer;margin-top:5px;width:100%;}
+button:hover{opacity:0.9;}
+
+.cart{position:fixed;top:0;right:-350px;width:320px;height:100%;background:white;box-shadow:-2px 0 5px rgba(0,0,0,0.3);padding:15px;overflow:auto;transition:0.4s;z-index:999;}
+.cart.active{right:0;}
+
+.cart-header{display:flex;justify-content:space-between;align-items:center;}
+.close-cart{cursor:pointer;font-size:20px;font-weight:bold;color:red;}
+
+.popup{position:fixed;bottom:20px;right:20px;background:green;color:white;padding:10px;border-radius:5px;display:none;}
+
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);justify-content:center;align-items:center;z-index:1000;}
+.modal-content{background:white;padding:30px;border-radius:10px;text-align:center;animation:fadeIn 0.3s ease;}
+@keyframes fadeIn{from{transform:scale(0.8);opacity:0;}to{transform:scale(1);opacity:1;}}
+.modal-content button{background:blue;margin-top:15px;}
+</style>
+</head>
+
+<body>
+
+<header>
+<h2>Camera Shop</h2>
+<nav>
+<a id="nav-home" onclick="tampilSemuaProduk()">Home</a>
+<a id="nav-dslr" onclick="tampilProduk('DSLR')">DSLR</a>
+<a id="nav-mirrorless" onclick="tampilProduk('Mirrorless')">Mirrorless</a>
+<a onclick="toggleCart()">🛒 (<span id="cart-count">0</span>)</a>
+</nav>
+</header>
+
+<div class="marquee">
+<marquee>🔥 Diskon Kamera Hingga 25% + Gratis Memory Card 🔥</marquee>
+</div>
+
+<div class="search-box">
+<input type="text" id="search" placeholder="Cari kamera..." onkeyup="searchProduct()">
+<a href="https://wa.me/6281617267224" target="_blank" class="wa-home">
+💬 Chat WhatsApp
+</a>
+</div>
+
+<div id="produk" class="container"></div>
+
+<div class="cart" id="cart">
+<div class="cart-header">
+<h3>Keranjang</h3>
+<span class="close-cart" onclick="toggleCart()">❌</span>
+</div>
+
+<ul id="cart-items"></ul>
+<h4>Total: Rp <span id="total">0</span></h4>
+
+<button onclick="checkout()">Checkout Pilihan</button>
+<button onclick="kosongkanCart()" style="background:red;">Kosongkan Keranjang</button>
+
+<div id="wa-link" style="margin-top:10px;"></div>
+</div>
+
+<div class="popup" id="popup">Produk masuk keranjang ✅</div>
+
+<div class="modal" id="successModal">
+<div class="modal-content">
+<h2>Pembelian Berhasil 🎉</h2>
+<p>Terima kasih sudah berbelanja!</p>
+<button onclick="closeModal()">Tutup</button>
+</div>
+</div>
+
+<script>
+
+const products=[
+{nama:"Canon EOS 200D",harga:7000000,kategori:"DSLR",gambar:"canoneos200fix.jpeg"},
+{nama:"Canon EOS 4000D",harga:5000000,kategori:"DSLR",gambar:"canoneos400d.jpeg"},
+{nama:"Canon EOS 90D",harga:15000000,kategori:"DSLR",gambar:"canoneos90d.jpeg"},
+{nama:"Nikon D3500",harga:6500000,kategori:"DSLR",gambar:"nikond3500.jpeg"},
+{nama:"Nikon D5600",harga:8500000,kategori:"DSLR",gambar:"nikond5600.jpeg"},
+{nama:"Nikon D7500",harga:13000000,kategori:"DSLR",gambar:"nikond7500.jpeg"},
+{nama:"Pentax K-70",harga:9000000,kategori:"DSLR",gambar:"pentaxk70.jpeg"},
+{nama:"Canon EOS 6D Mark II",harga:18000000,kategori:"DSLR",gambar:"canoneosmark6d.jpeg"},
+{nama:"Nikon D780",harga:25000000,kategori:"DSLR",gambar:"nikond780.jpeg"},
+{nama:"Canon EOS 5D Mark IV",harga:35000000,kategori:"DSLR",gambar:"canoneosmarkiv5d.jpeg"},
+{nama:"Sony A6000",harga:8000000,kategori:"Mirrorless",gambar:"sonya6000.jpeg"},
+{nama:"Sony A6400",harga:13000000,kategori:"Mirrorless",gambar:"sonYA6400.jpeg"},
+{nama:"Sony A7 III",harga:28000000,kategori:"Mirrorless",gambar:"sonya7iii.jpeg"},
+{nama:"Fujifilm X-T200",harga:9000000,kategori:"Mirrorless",gambar:"fujiflimxt200.jpeg"},
+{nama:"Fujifilm X-T4",harga:20000000,kategori:"Mirrorless",gambar:"fujiflimxt4.jpeg"},
+{nama:"Canon EOS M50",harga:7500000,kategori:"Mirrorless",gambar:"canoneosm50.jpeg"},
+{nama:"Canon EOS R6",harga:38000000,kategori:"Mirrorless",gambar:"canoneosr6.jpeg"},
+{nama:"Nikon Z50",harga:12000000,kategori:"Mirrorless",gambar:"nikionz50.jpeg"},
+{nama:"Nikon Z6 II",harga:30000000,kategori:"Mirrorless",gambar:"nikonz6ii.jpeg"},
+{nama:"Panasonic Lumix GH5",harga:22000000,kategori:"Mirrorless",gambar:"panasoniclumixgh5.jpeg"},
+];
+
+let cart=JSON.parse(localStorage.getItem("cart"))||[];
+
+function setActiveMenu(menuId){
+document.querySelectorAll("nav a").forEach(a=>a.classList.remove("active"));
+document.getElementById(menuId).classList.add("active");
+}
+
+function tampilSemuaProduk(){
+document.getElementById("produk").innerHTML="";
+products.forEach(p=>buatCard(p));
+setActiveMenu("nav-home");
+}
+
+function tampilProduk(kategori){
+document.getElementById("produk").innerHTML="";
+products.filter(p=>p.kategori===kategori).forEach(p=>buatCard(p));
+if(kategori==="DSLR"){setActiveMenu("nav-dslr");}
+else{setActiveMenu("nav-mirrorless");}
+}
+
+
+function addToCart(nama,harga){
+cart.push({nama,harga});
+localStorage.setItem("cart",JSON.stringify(cart));
+updateCart();
+showPopup();
+}
+function buatCard(p){
+document.getElementById("produk").innerHTML+=`
+<div class="card">
+<img src="${p.gambar}" alt="${p.nama}">
+<h4>${p.nama}</h4>
+<p>Rp ${p.harga.toLocaleString()}</p>
+<button onclick="addToCart('${p.nama}',${p.harga})">Tambah</button>
+</div>`;
+}
+
+function updateCart(){
+let list="";
+cart.forEach((item,index)=>{
+list+=`<li>
+<input type="checkbox" class="check" data-index="${index}" checked onchange="hitungTotal()">
+${item.nama} - Rp ${item.harga.toLocaleString()}
+<button onclick="hapus(${index})">❌</button>
+</li>`;
+});
+document.getElementById("cart-items").innerHTML=list;
+document.getElementById("cart-count").innerText=cart.length;
+hitungTotal();
+}
+
+function hitungTotal(){
+let total=0;
+document.querySelectorAll(".check").forEach(cb=>{
+if(cb.checked){
+let item=cart[cb.dataset.index];
+total+=item.harga;
+}
+});
+document.getElementById("total").innerText=total.toLocaleString();
+}
+
+function hapus(index){
+cart.splice(index,1);
+localStorage.setItem("cart",JSON.stringify(cart));
+updateCart();
+}
+
+function kosongkanCart(){
+cart=[];
+localStorage.setItem("cart",JSON.stringify(cart));
+updateCart();
+document.getElementById("wa-link").innerHTML="";
+}
+
+function toggleCart(){
+document.getElementById("cart").classList.toggle("active");
+}
+
+function checkout(){
+let total=0;
+let pesan="Pesanan:%0A";
+document.querySelectorAll(".check").forEach(cb=>{
+if(cb.checked){
+let item=cart[cb.dataset.index];
+pesan+=item.nama+" - Rp "+item.harga+"%0A";
+total+=item.harga;
+}
+});
+if(total===0){alert("Pilih produk terlebih dahulu!");return;}
+pesan+="%0ATotal: Rp "+total;
+let link="https://wa.me/6281234567890?text="+pesan;
+document.getElementById("wa-link").innerHTML=
+`<a href="${link}" target="_blank">
+<button style="background:green;">Kirim ke WhatsApp</button>
+</a>`;
+document.getElementById("successModal").style.display="flex";
+}
+
+function closeModal(){
+document.getElementById("successModal").style.display="none";
+}
+
+function searchProduct(){
+let keyword=document.getElementById("search").value.toLowerCase();
+let cards=document.querySelectorAll(".card");
+cards.forEach(card=>{
+card.style.display=card.innerText.toLowerCase().includes(keyword)?"block":"none";
+});
+}
+
+function showPopup(){
+let pop=document.getElementById("popup");
+pop.style.display="block";
+setTimeout(()=>{pop.style.display="none";},2000);
+}
+
+tampilSemuaProduk();
+updateCart();
+
+</script>
+</body>
+</html>
