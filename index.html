@@ -98,6 +98,59 @@ button:hover{opacity:0.9;}
   align-items:center;
   z-index:2000;
 }
+  /* ================= RESPONSIVE HP ================= */
+
+/* SEARCH BOX */
+.search-box input{
+  width:100%;
+  max-width:400px;
+}
+
+/* TABLET */
+@media (max-width:768px){
+
+  header{
+    flex-direction:column;
+    gap:10px;
+    text-align:center;
+  }
+
+  nav{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+
+  nav a{
+    margin:5px;
+  }
+
+  .container{
+    padding:10px;
+    gap:10px;
+  }
+
+  .card{
+    width:45%;
+  }
+
+  .slides img{
+    height:200px;
+  }
+}
+
+/* HP KECIL */
+@media (max-width:480px){
+
+  .card{
+    width:100%;
+  }
+
+  .modal-content{
+    width:90%;
+    padding:15px;
+  }
+}
 </style>
 </head>
 
