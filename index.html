@@ -151,6 +151,33 @@ button:hover{opacity:0.9;}
     padding:15px;
   }
 }
+  /* ===== FIX HEADER MOBILE ===== */
+@media (max-width:768px){
+
+  header{
+    flex-direction:column; /* dari horizontal jadi vertikal */
+    align-items:center;
+    text-align:center;
+    gap:10px;
+  }
+
+  header h2{
+    margin:0;
+  }
+
+  nav{
+    display:flex;
+    flex-wrap:wrap; /* biar turun kalau kepanjangan */
+    justify-content:center;
+  }
+
+  nav a{
+    font-size:14px;
+    padding:6px 10px;
+    margin:3px;
+  }
+
+}
 </style>
 </head>
 
