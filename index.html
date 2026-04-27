@@ -6,11 +6,26 @@
 <title>Camera Shop Premium</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#f5f5f5;}
-header{background:#1e49a5;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;}
+
+  #checkoutModal{
+  z-index: 9999;
+}
+  #main-nav{
+    display: none;
+  }
+  #search-section{
+    display: none;
+  }
+  <link
+  href=https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel"stylesheet">
+s
+header{
+  background:linear-gradient(135deg,#1e49a5,#4a7eec);
+  box-shadow:0 3px 10px rgba(0,0,0,0.15);
+}
 nav a{color:white;text-decoration:none;margin:0 8px;font-weight:bold;cursor:pointer;padding:5px 8px;border-radius:5px;transition:0.3s;}
 nav a:hover{background:rgba(255,255,255,0.2);}
-nav a.active{background:white;color:#2447b9;}
+nav a.active{background:white;color:#3962e9;}
 
 .marquee{background:#222;color:white;padding:8px;}
 
@@ -207,7 +222,7 @@ nav a.active{
 
 <header>
 <h2>Camera Shop</h2>
-<nav>
+<nav id="main-nav">
 <a id="nav-home" onclick="showHomepage()">Home</a>
 <a id="nav-dslr" onclick="tampilProduk('DSLR')">DSLR</a>
 <a id="nav-mirrorless" onclick="tampilProduk('Mirrorless')">Mirrorless</a>
@@ -221,7 +236,8 @@ nav a.active{
 </div>
 
 
-<div class="search-box">
+<div class="search-box"
+id="search-section">
 <input type="text" id="search" placeholder="Cari kamera..." onkeyup="searchProduct()">
 <a href="https://wa.me/6281617267224" target="_blank" class="wa-home">
 💬 Chat WhatsApp
@@ -266,7 +282,8 @@ nav a.active{
 <button onclick="kosongkanCart()" style="background:red;">Kosongkan Keranjang</button>
 
 <div id="wa-link" style="margin-top:10px;">
-<button style="background:green;" onclick="checkoutWA()">Checkout</button>
+<button style="background:green;" onclick="checkoutWA()">
+  Checkout
 </div>
 
 <div class="popup" id="popup">Produk masuk keranjang ✅</div>
@@ -288,6 +305,24 @@ nav a.active{
     <h4 id="modal-price"></h4>
 
     <button onclick="closeProductModal()" style="background:gray;">Kembali</button>
+  </div>
+</div>
+<div class="modal" id="checkoutModal">
+  <div class="modal-content" style="max-width:400px; text-align:left;">
+    
+    <h3>Data Pembeli</h3>
+
+    <input type="text" id="custNama" placeholder="Nama" style="width:100%; padding:8px; margin:5px 0;">
+    
+    <textarea id="custAlamat" placeholder="Alamat" style="width:100%; padding:8px; margin:5px 0;"></textarea>
+    
+    <input type="text" id="custTelp" placeholder="No Telpon" 
+      oninput="this.value=this.value.replace(/[^0-9]/g,'')" 
+      style="width:100%; padding:8px; margin:5px 0;">
+
+    <button onclick="prosesCheckout()" style="background:green;">Kirim Pesanan</button>
+    <button onclick="closeCheckoutModal()" style="background:gray;">Batal</button>
+
   </div>
 </div>
 <script>
@@ -329,49 +364,43 @@ document.querySelectorAll("nav a").forEach(a=>a.classList.remove("active"));
 document.getElementById(menuId).classList.add("active");
 }
 function checkoutWA(){
-let total=0;
-let pesan="🛒 Pesanan:%0A";
+  // tutup cart dulu
+  document.getElementById("cart").classList.remove("active");
 
-document.querySelectorAll(".check").forEach(cb=>{
-if(cb.checked){
-let item=cart[cb.dataset.index];
-
-pesan += "📸 " + item.nama + "%0A";
-pesan += "💰 Rp " + item.harga + "%0A";
-pesan += "🖼️ " + window.location.origin + "/" + item.gambar + "%0A%0A";
-
-total+=item.harga;
-}
-});
-
-if(total===0){
-alert("Pilih produk terlebih dahulu!");
-return;
+  // kasih delay biar animasi selesai
+  setTimeout(() => {
+    const modal = document.getElementById("checkoutModal");
+    modal.style.display = "flex";
+  }, 300);
 }
 
-pesan+="TOTAL: Rp "+total;
-
-let link="https://wa.me/6281617267224?text="+pesan;
-window.open(link,"_blank");
-}
 function tampilSemuaProduk(){
 document.getElementById("homepage").style.display="none";
 document.getElementById("produk").innerHTML="";
+document.getElementById("main-nav").style.display="flex";
+document.getElementById("search-section").style.display="flex"; // ⬅️ TAMBAH
+
 products.forEach(p=>buatCard(p));
 setActiveMenu("nav-home");
 }
 function showHomepage(){
-document.getElementById("homepage").style.display="block"; // tampilkan homepage
-document.getElementById("produk").innerHTML=""; // kosongkan produk
-setActiveMenu("nav-home");
+document.getElementById("homepage").style.display="block";
+document.getElementById("produk").innerHTML="";
+
+document.getElementById("main-nav").style.display="none";
+document.getElementById("search-section").style.display="none"; // ⬅️ TAMBAH
 }
 function tampilProduk(kategori){
+document.getElementById("homepage").style.display="none";
 document.getElementById("produk").innerHTML="";
+document.getElementById("main-nav").style.display="flex";
+document.getElementById("search-section").style.display="flex"; // ⬅️ TAMBAH
+
 products.filter(p=>p.kategori===kategori).forEach(p=>buatCard(p));
+
 if(kategori==="DSLR"){setActiveMenu("nav-dslr");}
 else{setActiveMenu("nav-mirrorless");}
 }
-
 let index = 0;
 let interval;
 
@@ -432,9 +461,9 @@ document.getElementById("produk").innerHTML+=`
     </button>
 
     <button style="background:green;"
-        onclick="event.stopPropagation(); checkoutSingle('${p.nama}',${p.harga},'${p.gambar}')">
-        Checkout WA
-    </button>
+    onclick="event.stopPropagation(); checkoutWA()">
+    Checkout
+</button>
 </div>
 
 </div>`;
@@ -463,6 +492,7 @@ document.getElementById("cart-items").innerHTML=list;
 document.getElementById("cart-count").innerText=cart.length;
 hitungTotal();
 }
+
 function hitungTotal(){
 let total=0;
 document.querySelectorAll(".check").forEach(cb=>{
@@ -541,6 +571,49 @@ function closeProductModal(){
   document.getElementById("productModal").style.display = "none";
 }
 updateCart();
+function prosesCheckout(){
+let nama = document.getElementById("custNama").value;
+let alamat = document.getElementById("custAlamat").value;
+let telp = document.getElementById("custTelp").value;
+
+if(nama==="" || alamat==="" || telp===""){
+  alert("Lengkapi data dulu!");
+  return;
+}
+
+let total=0;
+let pesan="🛒 Pesanan:%0A";
+pesan+="👤 Nama: "+nama+"%0A";
+pesan+="📍 Alamat: "+alamat+"%0A";
+pesan+="📞 Telp: "+telp+"%0A%0A";
+
+document.querySelectorAll(".check").forEach(cb=>{
+if(cb.checked){
+let item=cart[cb.dataset.index];
+
+pesan+="📸 "+item.nama+"%0A";
+pesan+="💰 Rp "+item.harga+"%0A";
+pesan+="🖼️ "+window.location.origin+"/"+item.gambar+"%0A%0A";
+
+total+=item.harga;
+}
+});
+
+if(total===0){
+alert("Pilih produk terlebih dahulu!");
+return;
+}
+
+pesan+="TOTAL: Rp "+total;
+
+let link="https://wa.me/6281617267224?text="+pesan;
+window.open(link,"_blank");
+
+closeCheckoutModal();
+}
+function closeCheckoutModal (){
+  document.getElementById("checkoutModal").style.display="none";
+}
 </script>
 </body>
 </html>
