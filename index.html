@@ -380,7 +380,9 @@ document.getElementById("produk").innerHTML="";
 document.getElementById("main-nav").style.display="flex";
 document.getElementById("search-section").style.display="flex"; // ⬅️ TAMBAH
 
-products.forEach(p=>buatCard(p));
+[...products]
+.sort((a,b)=>a.harga - b.harga)
+.forEach(p=>buatCard(p));
 setActiveMenu("nav-home");
 }
 function showHomepage(){
@@ -396,7 +398,10 @@ document.getElementById("produk").innerHTML="";
 document.getElementById("main-nav").style.display="flex";
 document.getElementById("search-section").style.display="flex"; // ⬅️ TAMBAH
 
-products.filter(p=>p.kategori===kategori).forEach(p=>buatCard(p));
+[...products]
+.filter(p=>p.kategori===kategori)
+.sort((a,b)=>a.harga - b.harga)
+.forEach(p=>buatCard(p));
 
 if(kategori==="DSLR"){setActiveMenu("nav-dslr");}
 else{setActiveMenu("nav-mirrorless");}
@@ -449,8 +454,17 @@ updateCart();
 showPopup();
 }
 function buatCard(p){
+
+let badge = "";
+if(p.kategori === "Mirrorless"){
+  badge = `<div class="badge" style="left:auto; right:10px; background:red;">DISKON 50%</div>`;
+}
+
 document.getElementById("produk").innerHTML+=`
 <div class="card" onclick="showProductDetail('${p.nama}',${p.harga},'${p.gambar}','${p.deskripsi}')">
+
+${badge}
+
 <img src="${p.gambar}" alt="${p.nama}">
 <h4>${p.nama}</h4>
 <p>Rp ${p.harga.toLocaleString()}</p>
@@ -591,9 +605,9 @@ document.querySelectorAll(".check").forEach(cb=>{
 if(cb.checked){
 let item=cart[cb.dataset.index];
 
-pesan+="📸 "+item.nama+"%0A";
-pesan+="💰 Rp "+item.harga+"%0A";
-pesan+="🖼️ "+window.location.origin+"/"+item.gambar+"%0A%0A";
+pesan+="📷"+item.nama+"%0A";
+pesan+="💸 Rp "+item.harga+"%0A";
+
 
 total+=item.harga;
 }
